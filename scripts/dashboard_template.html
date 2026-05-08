@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>한카케미칼 - 플라스틱 레진 일일 가격</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif; max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+  header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+  h1 { font-size: 1.4rem; margin: 0; }
+  .meta { color: #888; font-size: 0.85rem; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tabs button { padding: 6px 14px; border: 1px solid #ccc; background: transparent; cursor: pointer; border-radius: 6px; }
+  .tabs button.active { background: #2563eb; color: white; border-color: #2563eb; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: right; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+  th { background: rgba(127,127,127,0.1); position: sticky; top: 0; }
+  tr.no-data td.price { color: #aaa; }
+  .delta-up { color: #dc2626; }
+  .delta-down { color: #2563eb; }
+  .chart-wrap { margin-top: 24px; height: 360px; }
+  select { padding: 4px 8px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>한카케미칼 · 플라스틱 신재/재생 레진 일일 가격</h1>
+    <div class="meta" id="meta"></div>
+  </div>
+</header>
+
+<div class="tabs">
+  <button data-cat="virgin" class="active">신재 (Virgin)</button>
+  <button data-cat="recycled">재생 (Recycled)</button>
+</div>
+
+<table id="price-table">
+  <thead>
+    <tr>
+      <th>코드</th><th>품목</th><th>그레이드</th>
+      <th>최신 가격 (KRW/kg)</th><th>전일 대비</th><th>업데이트</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div class="chart-wrap">
+  <label>차트 품목:
+    <select id="chart-pick"></select>
+  </label>
+  <canvas id="chart"></canvas>
+</div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const rows = (DATA && DATA.rows) || [];
+const resins = (DATA && DATA.resins) || { virgin: [], recycled: [] };
+
+const byCode = {};
+for (const r of rows) {
+  if (!byCode[r.code]) byCode[r.code] = [];
+  byCode[r.code].push(r);
+}
+for (const k of Object.keys(byCode)) {
+  byCode[k].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+const allDates = [...new Set(rows.map(r => r.date))].sort();
+document.getElementById('meta').textContent =
+  allDates.length ? `최신 수집일: ${allDates[allDates.length - 1]} · 누적 ${rows.length} 행`
+                  : '아직 수집된 가격이 없습니다. 워크플로 실행 후 이 페이지를 다시 빌드하세요.';
+
+function renderTable(category) {
+  const tbody = document.querySelector('#price-table tbody');
+  tbody.innerHTML = '';
+  const list = resins[category] || [];
+  for (const r of list) {
+    const hist = byCode[r.code] || [];
+    const last = hist[hist.length - 1];
+    const prev = hist[hist.length - 2];
+    const lastPrice = last && last.price_krw_per_kg !== '' ? Number(last.price_krw_per_kg) : null;
+    const prevPrice = prev && prev.price_krw_per_kg !== '' ? Number(prev.price_krw_per_kg) : null;
+    let deltaCell = '–';
+    if (lastPrice !== null && prevPrice !== null) {
+      const d = lastPrice - prevPrice;
+      const cls = d > 0 ? 'delta-up' : d < 0 ? 'delta-down' : '';
+      const sign = d > 0 ? '▲' : d < 0 ? '▼' : '–';
+      deltaCell = `<span class="${cls}">${sign} ${Math.abs(d).toLocaleString()}</span>`;
+    }
+    const tr = document.createElement('tr');
+    if (lastPrice === null) tr.classList.add('no-data');
+    tr.innerHTML = `
+      <td>${r.code}</td>
+      <td>${r.name_ko}</td>
+      <td>${r.grade}</td>
+      <td class="price">${lastPrice !== null ? lastPrice.toLocaleString() : '미입력'}</td>
+      <td>${deltaCell}</td>
+      <td>${last ? last.date : '-'}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function populatePicker() {
+  const sel = document.getElementById('chart-pick');
+  sel.innerHTML = '';
+  for (const cat of ['virgin', 'recycled']) {
+    const group = document.createElement('optgroup');
+    group.label = cat === 'virgin' ? '신재' : '재생';
+    for (const r of resins[cat] || []) {
+      const opt = document.createElement('option');
+      opt.value = r.code;
+      opt.textContent = `${r.code} · ${r.name_ko}`;
+      group.appendChild(opt);
+    }
+    sel.appendChild(group);
+  }
+}
+
+let chart;
+function renderChart(code) {
+  const hist = (byCode[code] || []).filter(r => r.price_krw_per_kg !== '');
+  const labels = hist.map(r => r.date);
+  const data = hist.map(r => Number(r.price_krw_per_kg));
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById('chart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: `${code} (KRW/kg)`, data, borderColor: '#2563eb', tension: 0.2 }] },
+    options: { maintainAspectRatio: false, scales: { y: { beginAtZero: false } } },
+  });
+}
+
+document.querySelectorAll('.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTable(btn.dataset.cat);
+  });
+});
+document.getElementById('chart-pick').addEventListener('change', e => renderChart(e.target.value));
+
+renderTable('virgin');
+populatePicker();
+const firstCode = (resins.virgin[0] || resins.recycled[0] || {}).code;
+if (firstCode) renderChart(firstCode);
+</script>
+</body>
+</html>
