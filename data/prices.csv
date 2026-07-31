@@ -1763,3 +1763,24 @@ date,category,code,name,grade,price_krw_per_kg,source,note
 2026-07-30,recycled,rPS,rPS (재생 PS),Pellet,,manual,awaiting input
 2026-07-30,recycled,rABS,rABS (재생 ABS),Pellet,,manual,awaiting input
 2026-07-30,recycled,rPET,rPET (재생 PET),Flake/Pellet,,manual,awaiting input
+2026-07-31,virgin,HDPE,HDPE (고밀도 폴리에틸렌),Film/Blow,,manual,awaiting input
+2026-07-31,virgin,LDPE,LDPE (저밀도 폴리에틸렌),Film,,manual,awaiting input
+2026-07-31,virgin,LLDPE,LLDPE (선형 저밀도 PE),Film,,manual,awaiting input
+2026-07-31,virgin,PP,PP (폴리프로필렌),Injection,,manual,awaiting input
+2026-07-31,virgin,PVC,PVC (폴리염화비닐),General,,manual,awaiting input
+2026-07-31,virgin,GPPS,GPPS (범용 폴리스티렌),General,,manual,awaiting input
+2026-07-31,virgin,HIPS,HIPS (고충격 폴리스티렌),General,,manual,awaiting input
+2026-07-31,virgin,ABS,ABS,Injection,,manual,awaiting input
+2026-07-31,virgin,PET,PET (폴리에스테르),Bottle,,manual,awaiting input
+2026-07-31,virgin,PC,PC (폴리카보네이트),Injection,,manual,awaiting input
+2026-07-31,virgin,PA6,PA6 (나일론 6),Injection,,manual,awaiting input
+2026-07-31,virgin,PA66,PA66 (나일론 66),Injection,,manual,awaiting input
+2026-07-31,virgin,POM,POM (폴리아세탈),Injection,,manual,awaiting input
+2026-07-31,virgin,PMMA,PMMA (아크릴),General,,manual,awaiting input
+2026-07-31,recycled,rHDPE,rHDPE (재생 HDPE),Pellet/Flake,,manual,awaiting input
+2026-07-31,recycled,rLDPE,rLDPE (재생 LDPE),Pellet/Flake,,manual,awaiting input
+2026-07-31,recycled,rPP,rPP (재생 PP),Pellet,,manual,awaiting input
+2026-07-31,recycled,rPVC,rPVC (재생 PVC),Pellet,,manual,awaiting input
+2026-07-31,recycled,rPS,rPS (재생 PS),Pellet,,manual,awaiting input
+2026-07-31,recycled,rABS,rABS (재생 ABS),Pellet,,manual,awaiting input
+2026-07-31,recycled,rPET,rPET (재생 PET),Flake/Pellet,,manual,awaiting input
